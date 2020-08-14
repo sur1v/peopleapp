@@ -20,6 +20,12 @@ def get_people():
     people = People.objects().to_json()
     return Response(people, mimetype="application/json", status=200)
 
+# Get single person
+@app.route('/people/<id>', methods=['GET'])
+def get_single_people(id):
+    body = People.objects.get(nationalId=id).to_json()
+    return Response(body, mimetype="application/json", status=200)
+
 # Add person
 @app.route('/people', methods=['POST'])
 def add_people():
