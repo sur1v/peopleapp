@@ -29,7 +29,7 @@ def get_single_people(id):
         body = People.objects.get(nationalId=id).to_json()
         return Response(body, mimetype="application/json", status=200)
     # Returns 404 if not found
-    except Exception:
+    except DoesNotExist:
         return 'Not found', 404
 
 # Add person
@@ -78,7 +78,11 @@ def update_people(id):
 # Delete person
 @app.route('/people/<id>', methods=['DELETE'])
 def delete_people(id):
-    People.objects.get(nationalId=id).delete()
-    return 'Success', 200
+    try:
+        People.objects.get(nationalId=id).delete()
+        return 'Success', 200
+    # Returns 404 if not found
+    except DoesNotExist:
+        return 'Not found', 404
 
 app.run()
