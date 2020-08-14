@@ -4,7 +4,8 @@
 from flask import Flask, request, Response
 from database.db import initialize_db
 from database.models import People
-from mongoengine import NotUniqueError 
+from mongoengine import NotUniqueError
+from mongoengine import DoesNotExist
 
 app = Flask(__name__)
 
@@ -49,23 +50,35 @@ def add_people():
                 return 'Validation error', 400
         # Returns 400 on header mismatch
         else:
-            return '', 400
+            return 'Header error', 400
     # Returns 500 in any other exception
     except Exception:
-        return '', 500
+        return 'Error', 500
 
 
 # Update person
 @app.route('/people/<id>', methods=['PUT'])
 def update_people(id):
-    body = request.get_json(force=True)
-    People.objects.get(nationalId=id).update(**body)
-    return '', 200
+    try:
+        # Check request header
+        if request.headers.get('Content-Type')=='application/json':
+            body = request.get_json(force=True)
+            try:
+                People.objects.get(nationalId=id).update(**body)
+                return 'Success', 200
+            except DoesNotExist:
+                return 'Validation error', 400
+       # Returns 400 on header mismatch
+        else:
+            return 'Header error', 400
+    # Returns 500 in any other exception
+    except Exception:
+        return 'Error', 500
 
 # Delete person
 @app.route('/people/<id>', methods=['DELETE'])
 def delete_people(id):
     People.objects.get(nationalId=id).delete()
-    return '', 200
+    return 'Success', 200
 
 app.run()
