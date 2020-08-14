@@ -4,6 +4,7 @@
 from flask import Flask, request, Response
 from database.db import initialize_db
 from database.models import People
+from mongoengine import NotUniqueError 
 
 app = Flask(__name__)
 
@@ -26,17 +27,33 @@ def get_single_people(id):
     try:
         body = People.objects.get(nationalId=id).to_json()
         return Response(body, mimetype="application/json", status=200)
-    # Raise exception if not found
+    # Returns 404 if not found
     except Exception:
         return 'Not found', 404
 
 # Add person
 @app.route('/people', methods=['POST'])
 def add_people():
-    body = request.get_json(force=True)
-    people = People(**body).save()
-    nationalId = people.nationalId
-    return {'nationalId': str(nationalId)}, 200
+    try:
+        # Check request header
+        if request.headers.get('Content-Type')=='application/json':
+            body = request.get_json(force=True)
+            try:
+                people = People(**body).save()
+                nationalId = people.nationalId
+                body = People.objects.get(nationalId=nationalId).to_json()
+                # Returns created object and 201
+                return Response(body, mimetype="application/json", status=201)
+            # Handle validation
+            except NotUniqueError:
+                return 'Validation error', 400
+        # Returns 400 on header mismatch
+        else:
+            return '', 400
+    # Returns 500 in any other exception
+    except Exception:
+        return '', 500
+
 
 # Update person
 @app.route('/people/<id>', methods=['PUT'])
