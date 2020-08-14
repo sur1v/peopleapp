@@ -23,8 +23,12 @@ def get_people():
 # Get single person
 @app.route('/people/<id>', methods=['GET'])
 def get_single_people(id):
-    body = People.objects.get(nationalId=id).to_json()
-    return Response(body, mimetype="application/json", status=200)
+    try:
+        body = People.objects.get(nationalId=id).to_json()
+        return Response(body, mimetype="application/json", status=200)
+    # Raise exception if not found
+    except Exception:
+        return 'Not found', 404
 
 # Add person
 @app.route('/people', methods=['POST'])
