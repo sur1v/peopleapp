@@ -47,7 +47,7 @@ def add_people():
                 return Response(body, mimetype="application/json", status=201)
             # Handle validation
             except NotUniqueError:
-                return 'Validation error', 400
+                return 'Validation super error', 400
         # Returns 400 on header mismatch
         else:
             return 'Header error', 400
