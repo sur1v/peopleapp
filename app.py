@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 # Database settings
 app.config['MONGODB_SETTINGS'] = {
-    'host': 'mongodb://127.0.0.1/peopleapp'
+    'host': 'mongodb://database.sur1v.com/peopleapp'
 }
 
 initialize_db(app)
@@ -84,5 +84,3 @@ def delete_people(id):
     # Returns 404 if not found
     except DoesNotExist:
         return 'Not found', 404
-
-app.run()
