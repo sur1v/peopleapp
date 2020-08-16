@@ -1,0 +1,26 @@
+kind: pipeline
+name: default
+
+steps:
+- name: publish  
+  image: plugins/gcr
+  settings:
+    repo: fleet-muse-286415/people
+    tags: latest
+    json_key:
+      from_secret: GCLOUD
+
+- name: deploy
+  image: rancher/cli2
+  environment:
+    RANCHER_URL:
+      from_secret: RANCHER_URL
+    RANCHER_TOKEN:
+      from_secret: RANCHER_TOKEN
+  commands:
+  - "apk --no-cache add curl"
+  - "curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl"
+  - "chmod +x ./kubectl"
+  - "mv ./kubectl /usr/local/bin/kubectl"
+  - "rancher login $${RANCHER_URL} --token $${RANCHER_TOKEN} --skip-verify"
+  - "rancher kubectl rollout restart deployment/peopleapp"
